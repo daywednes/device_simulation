@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <title>Publish &amp; Subscribe</title>
+
+    <link rel="stylesheet" href="css/pubsub.css" />
+
+    <!-- Include Flash WebSocket via Conditional Comment:
+           http://msdn.microsoft.com/en-us/library/ms537512%28v=vs.85%29.aspx -->
+    <!--[if lte IE 9]>
+      <script type="text/javascript">
+        WEB_SOCKET_SWF_LOCATION = "../../flashws/WebSocketMain.swf";
+      </script>
+      <script type="text/javascript" src="../../flashws/swfobject.js"></script>
+      <script type="text/javascript" src="../../flashws/web_socket.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script>
+      AUTOBAHN_DEBUG = false;
+    </script>
+    <!-- <script src="/shared/autobahn/autobahn.min.js"></script> -->
+    <script src="../pubsub/js/autobahn.min.js"></script>
+
+    <script type="text/javascript" src="js/pubsub.js"></script>
+    <script type="text/javascript" src="js/pubsub1.js"></script>
+    <script type="text/javascript" src="js/pubsub2.js"></script>
+    <script type="text/javascript" src="js/pubsub3.js"></script>
+    <script type="text/javascript" src="js/pubsub4.js"></script>
+    <script type="text/javascript" src="js/pubsub5.js"></script>
+    <script type="text/javascript" src="js/pubsub6.js"></script>
+    <script type="text/javascript" src="js/pubsub7.js"></script>
+  </head>
+
+  <body>
+    <header>
+      <div id="header_inner">
+        <div id="demo_title">
+          <span>Publish &amp; Subscribe</span>
+        </div>
+
+        <a class="navbar-brand" href="/">
+          <img
+            src="crossbar_icon_inverted.svg"
+            alt="crossbar logo inverted"
+            width="60"
+            height="60"
+          />
+          <img
+            src="crossbar_demos_text_paths.svg"
+            alt="crossbar logo inverted"
+            width="248"
+            height="60"
+          />
+        </a>
+
+        <a href="#" target="_blank" id="secondInstance">Open 2nd instance</a>
+      </div>
+    </header>
+
+    <!-- <div class="demo_links">
+      <p>
+         Publish on a channel and receive published events in any browser subscribed to the same channel.
+      </p>
+      <div>
+         <a href="#" target="_blank" id="secondInstance">Open 2nd instance</a>
+         <a href="https://github.com/crossbario/crossbarexamples/tree/master/demos/pubsub">
+            Source Code
+         </a>
+         <a href="http://crossbar.io">
+            Crossbar.io Homepage
+         </a>
+      </div>
+   </div> -->
+    <!-- Device 1 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 1</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel}}"
+                  />
+                  <button id="controller-channel-switch" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device 2 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 2</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic001"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel001}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full001"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message001"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish001" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline001"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel001"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel001}}"
+                  />
+                  <button id="controller-channel-switch001" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel001" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full001"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message001"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear001" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time001"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline001"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device 3 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 3</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic002"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel002}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full002"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message002"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish002" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline002"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel002"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel002}}"
+                  />
+                  <button id="controller-channel-switch002" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel002" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full002"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message002"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear002" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time002"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline002"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device 4 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 4</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic003"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel003}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full003"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message003"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish003" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline003"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel003"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel003}}"
+                  />
+                  <button id="controller-channel-switch003" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel003" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full003"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message003"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear003" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time003"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline003"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <!-- Device 5 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 5</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic004"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel004}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full004"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message004"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish004" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline004"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel004"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel004}}"
+                  />
+                  <button id="controller-channel-switch004" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel004" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full004"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message004"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear004" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time004"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline004"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <!-- Device 6 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 6</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic005"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel005}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full005"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message005"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish005" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline005"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel005"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel005}}"
+                  />
+                  <button id="controller-channel-switch005" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel005" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full005"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message005"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear005" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time005"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline005"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <!-- Device 7 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 7</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic006"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel006}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full006"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message006"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish006" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline006"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel006"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel006}}"
+                  />
+                  <button id="controller-channel-switch006" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel006" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full006"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message006"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear006" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time006"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline006"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <!-- Device 8 -->
+    <div id="pubsub_wrapper" class="content_wrapper">
+      <h1>Device 8</h1>
+      <div id="pub_sub_wrapper">
+        <div id="central_table_wrapper">
+          <div id="alt_1_wrapper">
+            <div id="pub_alt_1_wrapper" class="column column_left">
+              <div class="box box_pubsub_left">
+                <div class="box_heading">
+                  <strong>Publish</strong> from this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Publication Topic</p>
+                  <input
+                    type="text"
+                    id="pub_topic007"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel007}}"
+                  /><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="pub_topic_full007"></span>
+                  </p>
+                  <p class="box_caption box_second">Message</p>
+                  <textarea
+                    id="pub_message007"
+                    spellcheck="false"
+                    class="textbox_active"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="pub_publish007" class="button">Publish</button>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline007"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="alt_1_spacer" class="spacer"></div>
+
+            <div id="sub_alt_1_wrapper" class="column column_right">
+              <div class="box box_pubsub_right">
+                <div class="box_heading">
+                  <strong>Subscribe</strong> in this browser
+                </div>
+
+                <div class="box_content box_content_alt_1">
+                  <p class="box_caption">Subscription Topic</p>
+                  <input
+                    type="text"
+                    id="controller-channel007"
+                    class="textbox_active"
+                    size="6"
+                    maxlength="6"
+                    value="{{channel007}}"
+                  />
+                  <button id="controller-channel-switch007" class="button">
+                    Subscribe
+                  </button>
+                  <button id="controller-channel-cancel007" class="button">
+                    Cancel</button
+                  ><br />
+                  <p class="pubsub_topic_full">
+                    URI: <span id="sub_topic_full007"></span>
+                  </p>
+                  <p class="box_caption box_second">Received Messages</p>
+                  <textarea
+                    id="sub_message007"
+                    spellcheck="false"
+                    cols="38"
+                    rows="4"
+                    style="resize: none"
+                  ></textarea>
+                  <button id="sub_message_clear007" class="button">Clear</button
+                  ><br />
+                  <div id="sub_message_details" class="box_caption">
+                    Round-trip time / size
+                    <span id="last_message">(last message)</span>:
+                    <span id="sub_message_details_time007"></span>
+                  </div>
+                  <div class="status_line pubsub_status_line">
+                    Status: <span class="statusline007"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="info_bar" style="display: none">
+        <p class="info_bar_heading">Publish and subscribe using Crossbar.io</p>
+        <ul>
+          <li>
+            All interactions on this demo occur in response to messages routed
+            through the instance of Crossbar.io displayed in the status line at
+            the bottom of the demo box.
+          </li>
+          <li>
+            Messages can be published from any application or platform that
+            supports HTTP/POST.
+          </li>
+        </ul>
+      </div>
+
+      <!-- community widget iframe -->
+
+      <!-- general styles for the widget -->
+      <!-- <link rel="stylesheet" type="text/css" href="https://demo.crossbar.io/clandeckwidget/css/parent.css" /> -->
+
+      <!-- local stylesheet -->
+      <!--     - ensures non-Display if nothing loads -->
+      <!--     - site-specific positioning of widget -->
+
+      <!-- IFrame itself -->
+      <!-- <iframe id="communityWidget" class="nonDisplay" src="https://demo.crossbar.io/clandeckwidget/index.html" frameborder="0"></iframe> -->
+
+      <!-- the parent page connecting code -->
+      <!-- <script src="https://demo.crossbar.io/clandeckwidget/js/parent.js"></script> -->
+    </div>
+
+    <style>
+      #communityWidget.nonDisplay {
+        display: none;
+      }
+
+      #communityWidget {
+        top: 111px;
+        right: 0px;
+        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.4);
+      }
+    </style>
+  </body>
+</html>
