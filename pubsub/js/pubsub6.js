@@ -50,7 +50,8 @@ function randomChannelId006() {
    for (var i = 0; i < _idlen; i += 1) {
       id += _idchars.charAt(Math.floor(Math.random() * _idchars.length));
    }
-   return id;
+   // return id;
+   return 404890;
 };
 
 function checkChannelId006(id) {
@@ -279,7 +280,18 @@ function setupDemo006() {
    pubTopic006 = document.getElementById('pub_topic006');
    pubMessage006 = document.getElementById('pub_message006');
 
-   $("#pub_message006").val("Hello, world.");
+   let mess = JSON.stringify({
+      connectionStatus: "READY_TO_CONNECT",
+      engineStatus: "90%",
+      msg: "Window 3",
+      deviceId: "000007",
+      deviceName: "Window 3",
+      tags: "Window 3",
+      sensorType: "2",
+      locationType: "3",
+      deviceGroup: "1",
+    });
+   $("#pub_message006").val(mess);
 
    pubMessageBtn006 = document.getElementById('pub_publish006');
 

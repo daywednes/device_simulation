@@ -50,7 +50,8 @@ function randomChannelId001() {
    for (var i = 0; i < _idlen; i += 1) {
       id += _idchars.charAt(Math.floor(Math.random() * _idchars.length));
    }
-   return id;
+   // return id;
+   return 404890;
 };
 
 function checkChannelId001(id) {
@@ -279,7 +280,19 @@ function setupDemo001() {
    pubTopic001 = document.getElementById('pub_topic001');
    pubMessage001 = document.getElementById('pub_message001');
 
-   $("#pub_message001").val("Hello, world.");
+   let mess = JSON.stringify({
+      connectionStatus: "READY_TO_CONNECT",
+      engineStatus: "100%",
+      msg: "Camera",
+      deviceId: "000002",
+      deviceName: "Camera",
+      tags: "Camera",
+      sensorType: "2",
+      locationType: "2",
+      deviceGroup: "2",
+    });
+
+   $("#pub_message001").val(mess);
 
    pubMessageBtn001 = document.getElementById('pub_publish001');
 
