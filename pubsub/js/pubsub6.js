@@ -283,13 +283,13 @@ function setupDemo006() {
    let mess = JSON.stringify({
       connectionStatus: "READY_TO_CONNECT",
       engineStatus: "90%",
-      msg: "Window 3",
+      msg: "Camera 3",
       deviceId: "000007",
       deviceName: "Window 3",
-      tags: "Window 3",
+      tags: "Camera 3",
       sensorType: "2",
       locationType: "3",
-      deviceGroup: "1",
+      deviceGroup: "Camera",
     });
    $("#pub_message006").val(mess);
 

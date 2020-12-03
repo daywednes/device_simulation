@@ -289,7 +289,7 @@ function setupDemo001() {
       tags: "Camera",
       sensorType: "2",
       locationType: "2",
-      deviceGroup: "2",
+      deviceGroup: "Camera",
     });
 
    $("#pub_message001").val(mess);

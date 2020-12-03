@@ -283,13 +283,13 @@ function setupDemo005() {
    let mess = JSON.stringify({
       connectionStatus: "READY_TO_CONNECT",
       engineStatus: "90%",
-      msg: "Window",
+      msg: "Window Motion Sensor",
       deviceId: "000006",
-      deviceName: "Window",
-      tags: "Window",
+      deviceName: "Window Motion Sensor",
+      tags: "Motion Sensor",
       sensorType: "1",
       locationType: "1",
-      deviceGroup: "1",
+      deviceGroup: "Motion Sensor",
     });
    $("#pub_message005").val(mess);
 

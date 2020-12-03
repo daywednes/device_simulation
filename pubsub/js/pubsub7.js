@@ -292,10 +292,10 @@ function setupDemo007() {
     msg: "Window 5",
     deviceId: "000008",
     deviceName: "Window 5",
-    tags: "Window",
+    tags: "Radar Sensor",
     sensorType: "2",
     locationType: "3",
-    deviceGroup: "2",
+    deviceGroup: "Radar Sensor",
   });
   $("#pub_message007").val(mess);
 

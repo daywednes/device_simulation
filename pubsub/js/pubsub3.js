@@ -289,13 +289,13 @@ function setupDemo003() {
   let mess = JSON.stringify({
     connectionStatus: "READY_TO_CONNECT",
     engineStatus: "90%",
-    msg: "Door",
+    msg: "Door Motion Sensor",
     deviceId: "000004",
-    deviceName: "Door",
-    tags: "Door",
+    deviceName: "Door Motion Sensor",
+    tags: "Door ",
     sensorType: "1",
     locationType: "1",
-    deviceGroup: "1",
+    deviceGroup: "Motion Sensor",
   });
   $("#pub_message003").val(mess);
 

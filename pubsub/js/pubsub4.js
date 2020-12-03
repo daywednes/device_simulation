@@ -283,13 +283,13 @@ function setupDemo004() {
    let mess = JSON.stringify({
       connectionStatus: "READY_TO_CONNECT",
       engineStatus: "90%",
-      msg: "Door 2",
+      msg: "Door Radar Sensor",
       deviceId: "000005",
-      deviceName: "Door 2",
+      deviceName: "Door Radar Sensor",
       tags: "Door",
       sensorType: "1",
       locationType: "1",
-      deviceGroup: "1",
+      deviceGroup: "Radar Sensor",
     });
    $("#pub_message004").val(mess);
 

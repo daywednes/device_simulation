@@ -288,13 +288,13 @@ function setupDemo002() {
   let mess = JSON.stringify({
     connectionStatus: "READY_TO_CONNECT",
     engineStatus: "90%",
-    msg: "Camera 1",
+    msg: "Camera Contact Sensor",
     deviceId: "000003",
-    deviceName: "Camera 1",
+    deviceName: "Camera Contact Sensor",
     tags: "Camera",
     sensorType: "2",
     locationType: "2",
-    deviceGroup: "2",
+    deviceGroup: "Contact Sensor",
   });
   $("#pub_message002").val(mess);
 

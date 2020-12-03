@@ -294,7 +294,7 @@ function setupDemo() {
     tags: "TV",
     sensorType: "1",
     locationType: "2",
-    deviceGroup: "1",
+    deviceGroup: "Zone Input",
   });
   $("#pub_message").val(mess);
 
