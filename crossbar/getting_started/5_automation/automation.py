@@ -28,30 +28,48 @@ from autobahn.twisted.component import Component, run
 from autobahn.twisted.util import sleep
 from twisted.internet.defer import inlineCallbacks
 import os
-import argparse
+from send_gmail import send_email
 
-url = os.environ.get('CBURL', 'ws://localhost:8080/ws')
-realmv = os.environ.get('CBREALM', 'realm1')
-topic = os.environ.get('CBTOPIC', 'com.myapp.hello')
-print(url, realmv)
-component = Component(transports=url, realm=realmv)
+TRIGGER = 404890
+EMAIL_CONTENT="alert: trigger"
+NOTIFICATION_TOPIC="trigger"
+MESSAGE="Received trigger signal!"
+EMAIL="mikedoan82@gmail.com"
+SUBJECT = "Trigger email"
+
+url = os.environ.get('CBURL', 'ws://localhost:8090/ws')
+realmvalue = os.environ.get('CBREALM', 'realm1')
+topic_trigger = os.environ.get('CBTOPIC', '404890')
+topic_warning = os.environ.get('CBTOPIC', '404891')
+
+component = Component(transports=url, realm=realmvalue)
 
 
 @component.on_join
 @inlineCallbacks
 def joined(session, details):
     print("session ready")
-    counter = 0
-    while True:
-        # publish() only returns a Deferred if we asked for an acknowledgement
-        session.publish(topic , "Hello World %d"%counter)
-        counter += 1
-        yield sleep(1)
 
+    def oncounter(message):
+        print(f"event received: {message}")
+
+        if "trigger" in message:
+            # Send email
+            send_email(EMAIL,EMAIL_CONTENT,SUBJECT)
+
+            # Send message
+            session.publish(topic_warning, MESSAGE)
+            print("Message published!")
+
+    try:
+        yield session.subscribe(oncounter, topic_trigger)
+        print("subscribed to topic")
+    except Exception as e:
+        print("could not subscribe to topic: {0}".format(e))
 
 
 if __name__ == "__main__":
-    run([component])        
+    run([component])
 
 
 
