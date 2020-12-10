@@ -16,8 +16,8 @@ var demoPrefix = "io.crossbar.demo";
 //
 var wsuri;
 if (document.location.origin == "file://") {
-  // wsuri = "ws://127.0.0.1:8090";
-  wsuri = "ws://localhost:8090/ws";
+  // wsuri = "ws://54.176.243.182:8090";
+  wsuri = "ws://54.176.243.182:8090/ws";
 } else {
   wsuri =
     (document.location.protocol === "http:" ? "ws:" : "wss:") +
@@ -30,7 +30,7 @@ var httpUri;
 
 if (document.location.origin == "file://") {
   // httpUri = "http://127.0.0.1:8090/lp";
-  httpUri = "ws://localhost:8090/ws";
+  httpUri = "ws://54.176.243.182:8090/ws";
 } else {
   httpUri =
     (document.location.protocol === "http:" ? "http:" : "https:") +

@@ -29,18 +29,18 @@ from autobahn.twisted.util import sleep
 from twisted.internet.defer import inlineCallbacks
 import os
 from send_gmail import send_email
+import json
 
 TRIGGER = 404890
 EMAIL_CONTENT="alert: trigger"
 NOTIFICATION_TOPIC="trigger"
-MESSAGE="Received trigger signal!"
 EMAIL="mikedoan82@gmail.com"
 SUBJECT = "Trigger email"
 
-url = os.environ.get('CBURL', 'ws://localhost:8090/ws')
+url = os.environ.get('CBURL', 'ws://54.176.243.182:8090/ws')
 realmvalue = os.environ.get('CBREALM', 'realm1')
-topic_trigger = os.environ.get('CBTOPIC', '404890')
-topic_warning = os.environ.get('CBTOPIC', '404891')
+topic_trigger = os.environ.get('CBTOPIC', 'io.crossbar.demo.pubsub.404890')
+topic_warning = os.environ.get('CBTOPIC', 'io.crossbar.demo.pubsub.404891')
 
 component = Component(transports=url, realm=realmvalue)
 
@@ -53,19 +53,32 @@ def joined(session, details):
     def oncounter(message):
         print(f"event received: {message}")
 
-        if "trigger" in message:
+        message = json.loads(message)
+
+        if "event" in message and message["event"]=="trigger":
             # Send email
             send_email(EMAIL,EMAIL_CONTENT,SUBJECT)
 
             # Send message
-            session.publish(topic_warning, MESSAGE)
+            send_message = {
+                "connectionStatus": "CONNECTED",
+                "engineStatus": "100%",
+                "msg": "automation",
+                "event": "trigger",
+                "deviceId": "000011",
+                "deviceName": "automation",
+                "tags": "automation",
+                "locationType": "2",
+                "deviceGroup": "Zone automation"
+            }
+            session.publish(topic_warning, json.dumps(send_message))
             print("Message published!")
 
     try:
         yield session.subscribe(oncounter, topic_trigger)
         print("subscribed to topic")
     except Exception as e:
-        print("could not subscribe to topic: {0}".format(e))
+        print(f"could not subscribe to topic: {e}")
 
 
 if __name__ == "__main__":
