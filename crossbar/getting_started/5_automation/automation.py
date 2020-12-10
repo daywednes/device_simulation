@@ -39,8 +39,9 @@ SUBJECT = "Trigger email"
 
 url = os.environ.get('CBURL', 'ws://54.176.243.182:8090/ws')
 realmvalue = os.environ.get('CBREALM', 'realm1')
-topic_trigger = os.environ.get('CBTOPIC', 'io.crossbar.demo.pubsub.404890')
-topic_warning = os.environ.get('CBTOPIC', 'io.crossbar.demo.pubsub.404891')
+topic_trigger = os.environ.get('TOPIC_TRIGGER', 'io.crossbar.demo.pubsub.404890')
+topic_warning = os.environ.get('TOPIC_WARNING', 'io.crossbar.demo.pubsub.404891')
+activity_topic = os.environ.get('ACTIVITY_TOPIC', 'io.crossbar.demo.pubsub.404892')
 
 component = Component(transports=url, realm=realmvalue)
 
@@ -69,9 +70,13 @@ def joined(session, details):
                 "deviceName": "automation",
                 "tags": "automation",
                 "locationType": "2",
-                "deviceGroup": "Zone automation"
+                "deviceGroup": "Zone automation",
+                "name": "ARM AWAY DETECTION",
+                "hubId": "1",
+                "description": "Someone triggered some device"
             }
             session.publish(topic_warning, json.dumps(send_message))
+            session.publish(activity_topic, json.dumps(send_message))
             print("Message published!")
 
     try:
