@@ -31,6 +31,7 @@ import os
 from send_gmail import send_email
 import json
 from sqlalchemy_postgres import create_engine_db
+import pprint
 
 TRIGGER = 404890
 EMAIL_CONTENT = "alert: trigger"
@@ -43,6 +44,7 @@ realmvalue = os.environ.get('CBREALM', 'realm1')
 topic_trigger = os.environ.get('TOPIC_TRIGGER', 'io.crossbar.demo.pubsub.404890')
 topic_warning = os.environ.get('TOPIC_WARNING', 'io.crossbar.demo.pubsub.404891')
 activity_topic = os.environ.get('ACTIVITY_TOPIC', 'io.crossbar.demo.pubsub.404892')
+topic_update = os.environ.get('UPDATE_TOPIC', 'io.crossbar.demo.pubsub.404893')
 
 component = Component(transports=url, realm=realmvalue)
 
@@ -50,27 +52,49 @@ db = create_engine_db()
 
 orgids = {}
 
-def update_orgids(db):
-    result_set = db.execute("SELECT * FROM automations_entity")
+def update_orgids(db,orgid=None):
+    if orgid is None:
+        result_set = db.execute("SELECT * FROM automations_entity")
+        print("Update all orgid")
+
+    else:
+        result_set = db.execute(f"SELECT * FROM automations_entity WHERE orgid={orgid}")
+        # Remove old set
+        orgids.pop(orgid, None)
+        print(f"Update orgid:{orgid}")
+
     for r in result_set:
         r_dic = dict(r.items())
-        print(r_dic)
+
+        # Check if orgid is exist
+        if r_dic["orgid"] not in orgids:
+            orgids[r_dic["orgid"]] = []
+
+        orgids[r_dic["orgid"]].append(r_dic)
+
+    pprint.PrettyPrinter(depth=4).pprint(orgids)
 
 
 @component.on_join
 @inlineCallbacks
 def joined(session, details):
 
-
     print("session ready")
 
-    print("Update from automations_entity")
-
-    def oncounter(message):
-        print(f"event received: {message}")
-
+    def handle_update(message):
+        print(f"topic_update received: {message}")
         message = json.loads(message)
+        if "event" in message and message["event"] == "update":
+            if "orgid" in message:
+                update_orgids(db,message["orgid"])
+            else:
+                update_orgids(db)
 
+        print("Automation updated!")
+
+    def handle_trigger(message):
+        print(f"topic_trigger received: {message}")
+        message = json.loads(message)
         if "event" in message and message["event"] == "trigger":
             # Send email
             send_email(EMAIL, EMAIL_CONTENT, SUBJECT)
@@ -94,18 +118,17 @@ def joined(session, details):
             session.publish(activity_topic, json.dumps(send_message))
             print("Message published!")
 
-        elif "event" in message and message["event"] == "update":
-            update_orgids(db)
-            print("Automation updated!")
-
     try:
-        yield session.subscribe(oncounter, topic_trigger)
-        yield session.subscribe(oncounter, topic_update)
-        print("subscribed to topic")
+        yield session.subscribe(handle_trigger, topic_trigger)
+        print(f"subscribed to topic {topic_trigger}")
+        yield session.subscribe(handle_update, topic_update)
+        print(f"subscribed to topic {topic_update}")
     except Exception as e:
         print(f"could not subscribe to topic: {e}")
 
 
 if __name__ == "__main__":
+    print("Update from automations_entity")
     update_orgids(db)
+
     run([component])
